@@ -3,13 +3,24 @@ package main
 import (
 	"github.com/Numbers88s/keltur-backend/models"
 	"fmt"
+	"log"
 	"net/http"
 )
 
+type Env struct {
+	db models.Datastore
+}
+
 func main() {
-	models.InitDB("user=keltur password=keltur dbname=keltur sslmode=disable")
+	db, err := models.NewDB("user=keltur password=keltur dbname=keltur sslmode=disable")
+	if err != nil {
+		log.Panic(err)
+	}
+
+	env := &Env{ db }
+
 	http.HandleFunc("/", hello)
-	http.HandleFunc("/items", itemsIndex)
+	http.HandleFunc("/items", env.itemsIndex)
 	// http.HandleFunc("/items/show", itemsShow)
 	// http.HandleFunc("/item/create", itemsCreate)
 	http.ListenAndServe(":8080", nil)
@@ -20,12 +31,12 @@ func hello(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello world from my Go program!")
 }
 
-func itemsIndex(w http.ResponseWriter, r *http.Request) {
+func (env *Env) itemsIndex(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		http.Error(w, http.StatusText(405), 405)
 	}
 
-	items, err := models.AllItems()
+	items, err := env.db.AllItems()
 	if err != nil {
 		http.Error(w, http.StatusText(500), 500)
 		return

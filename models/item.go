@@ -10,7 +10,7 @@ type Item struct {
 	Price    float32
 }
 
-func AllItems() ([]*Item, error) {
+func (db *DB) AllItems() ([]*Item, error) {
     rows, err := db.Query("SELECT * FROM items")
     if err != nil {
         return nil, err

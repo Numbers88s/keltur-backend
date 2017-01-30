@@ -1,21 +1,27 @@
 package models
 
 import (
-    "database/sql"
-    _ "github.com/lib/pq"
-    "log"
+  _ "github.com/lib/pq"
+  "database/sql"
 )
 
-var db *sql.DB
+type Datastore interface {
+  AllItems() ([]*Item, error)
+}
 
-func InitDB(dataSourceName string) {
-    var err error
-    db, err = sql.Open("postgres", dataSourceName)
-    if err != nil {
-        log.Panic(err)
-    }
+type DB struct {
+  *sql.DB
+}
 
-    if err = db.Ping(); err != nil {
-        log.Panic(err)
-    }
+func NewDB(dataSourceName string) (*DB, error) {
+  db, err := sql.Open("postgres", dataSourceName)
+  if err != nil {
+    return nil, err
+  }
+  if err = db.Ping(); err != nil {
+    return nil, err
+  }
+
+  return &DB{db}, nil
+
 }
